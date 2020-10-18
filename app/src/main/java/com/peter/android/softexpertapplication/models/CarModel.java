@@ -1,9 +1,5 @@
 package com.peter.android.softexpertapplication.models;
 
-import androidx.room.ColumnInfo;
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
-
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
@@ -20,7 +16,6 @@ public class CarModel implements Serializable {
     private boolean isUsed;
     @SerializedName("imageUrl")
     private String image;
-
 
 
     public CarModel() {
@@ -43,7 +38,7 @@ public class CarModel implements Serializable {
     }
 
     public String getBrand() {
-        return brand==null?"Unknown Brand":brand;
+        return brand == null ? "Unknown Brand" : brand;
     }
 
     public void setBrand(String brand) {
@@ -51,7 +46,7 @@ public class CarModel implements Serializable {
     }
 
     public String getConstractionYear() {
-        return constractionYear==null?"Unknown Year":constractionYear;
+        return constractionYear == null ? "Unknown Year" : constractionYear;
     }
 
     public void setConstractionYear(String constractionYear) {

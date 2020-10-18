@@ -16,14 +16,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-
-import com.peter.android.softexpertapplication.models.CarModel;
-import com.peter.android.softexpertapplication.adapters.CarRvAdapter;
 import com.peter.android.softexpertapplication.R;
+import com.peter.android.softexpertapplication.adapters.CarRvAdapter;
+import com.peter.android.softexpertapplication.models.CarModel;
 import com.peter.android.softexpertapplication.retrofit.ProductsResponse;
 import com.peter.android.softexpertapplication.retrofit.RetrofitFactory;
 import com.peter.android.softexpertapplication.retrofit.WebServices;
@@ -90,54 +90,45 @@ public class HomeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-// Testing
-//        dialog = new ProgressDialog(requireContext());
-//        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-
         setUpRecyclerView();
-        getAllProducts(page);
-
+        getAllProducts(page);// first run!
     }
 
     private void getAllProducts(int page) {
-//        dialog.show();
         connectionIv.setVisibility(View.INVISIBLE);
         webServices = RetrofitFactory.getRetrofit().create(WebServices.class);
 
         Call<ProductsResponse> getProducts = webServices.getProducts(page);
-        http://demo1585915.mockable.io/api/v1/cars?page=%7Bpage%7D
+        //http://demo1585915.mockable.io/api/v1/cars?page=%7Bpage%7D
         getProducts.enqueue(new Callback<ProductsResponse>() {
             @Override
             public void onResponse(Call<ProductsResponse> call, Response<ProductsResponse> response) {
                 try {
                     List<CarModel> cars = response.body().getProductsList();
-                    if(cars==null||cars.isEmpty() ){
-                       HomeFragment.this.page =1;
-                    }else {
+                    if (cars == null || cars.isEmpty()) {
+                        HomeFragment.this.page = 1;
+                    } else {
                         productsList.addAll(cars);
                         productsAdapter.notifyDataSetChanged();
                     }
 
                     connectionIv.setVisibility(View.INVISIBLE);
-                }catch (Exception e){
-                    HomeFragment.this.page =1;
-                    Log.e("Error",call.request().body()+" "+response.message());
+                } catch (Exception e) {
+                    HomeFragment.this.page = 1;
+                    Log.e("Error", call.request().body() + " " + response.message());
                     connectionIv.setVisibility(View.VISIBLE);
-                }finally {
+                } finally {
                     swipeContainer.setRefreshing(false);
-//                    dialog.dismiss();
-
                 }
 
             }
 
             @Override
             public void onFailure(Call<ProductsResponse> call, Throwable t) {
-                HomeFragment.this.page =1;
-                Log.e("Error",t.getMessage());
+                HomeFragment.this.page = 1;
+                Log.e("Error", t.getMessage());
                 connectionIv.setVisibility(View.VISIBLE);
                 swipeContainer.setRefreshing(false);
-                dialog.dismiss();
 
                 // Logs .. logging
                 Toast.makeText(requireContext(), "Network Problem", Toast.LENGTH_SHORT).show();
@@ -150,55 +141,21 @@ public class HomeFragment extends Fragment {
         productsAdapter = new CarRvAdapter(productsList, requireContext());
         LinearLayoutManager layoutManager = new LinearLayoutManager(requireContext());
         productRv.setLayoutManager(layoutManager);
-        productRv.addItemDecoration(new GridSpacingItemDecoration(2, dpToPx(14), true));
+        productRv.addItemDecoration(new DividerItemDecoration(getActivity(), LinearLayoutManager.VERTICAL));
         productRv.setItemAnimator(new DefaultItemAnimator());
         productRv.setAdapter(productsAdapter);
         productRv.addOnScrollListener(new EndlessRecyclerViewScrollListener(layoutManager) {
             @Override
             public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-                if(productsList.size()>0){
+                if (productsList.size() > 0) {
                     HomeFragment.this.page++;
-                }else{
+                } else {
                     HomeFragment.this.page = 1;
                 }
                 getAllProducts(page);
+                resetState();
             }
         });
-    }
-
-    public class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {
-
-        private int spanCount;
-        private int spacing;
-        private boolean includeEdge;
-
-        public GridSpacingItemDecoration(int spanCount, int spacing, boolean includeEdge) {
-            this.spanCount = spanCount;
-            this.spacing = spacing;
-            this.includeEdge = includeEdge;
-        }
-
-        @Override
-        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-            int position = parent.getChildAdapterPosition(view); // item position
-            int column = position % spanCount; // item column
-
-            if (includeEdge) {
-                outRect.left = spacing - column * spacing / spanCount; // spacing - column * ((1f / spanCount) * spacing)
-                outRect.right = (column + 1) * spacing / spanCount; // (column + 1) * ((1f / spanCount) * spacing)
-
-                if (position < spanCount) { // top edge
-                    outRect.top = spacing;
-                }
-                outRect.bottom = spacing; // item bottom
-            } else {
-                outRect.left = column * spacing / spanCount; // column * ((1f / spanCount) * spacing)
-                outRect.right = spacing - (column + 1) * spacing / spanCount; // spacing - (column + 1) * ((1f /    spanCount) * spacing)
-                if (position >= spanCount) {
-                    outRect.top = spacing; // item top
-                }
-            }
-        }
     }
 
     /**
@@ -212,13 +169,13 @@ public class HomeFragment extends Fragment {
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putInt("page",page);
+        outState.putInt("page", page);
     }
 
     @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
-        if(savedInstanceState != null)
-        page = savedInstanceState.getInt(getString(R.string.page),1);
+        if (savedInstanceState != null)
+            page = savedInstanceState.getInt(getString(R.string.page), 1);
     }
 }
