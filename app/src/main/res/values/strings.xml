@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">SoftExpert Application</string>
+    <string name="page">page</string>
+    <string name="brand">Brand : %s</string>
+    <string name="used">Used</string>
+    <string name="newCar">Condition : New</string>
+    <string name="year">Year %s</string>
+</resources>
