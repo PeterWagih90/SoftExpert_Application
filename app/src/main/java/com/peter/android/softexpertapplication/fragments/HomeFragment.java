@@ -75,6 +75,7 @@ public class HomeFragment extends Fragment {
                 // once the network request has completed successfully.
                 page = 1;// reset
                 productsList.clear();
+                productsAdapter.notifyDataSetChanged();
                 getAllProducts(page);
             }
         });
@@ -89,42 +90,55 @@ public class HomeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+// Testing
+//        dialog = new ProgressDialog(requireContext());
+//        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 
-        dialog = new ProgressDialog(requireContext());
-        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        dialog.show();
-
-        getAllProducts(page);
         setUpRecyclerView();
+        getAllProducts(page);
 
     }
 
     private void getAllProducts(int page) {
+//        dialog.show();
         connectionIv.setVisibility(View.INVISIBLE);
         webServices = RetrofitFactory.getRetrofit().create(WebServices.class);
 
         Call<ProductsResponse> getProducts = webServices.getProducts(page);
-
+        http://demo1585915.mockable.io/api/v1/cars?page=%7Bpage%7D
         getProducts.enqueue(new Callback<ProductsResponse>() {
             @Override
             public void onResponse(Call<ProductsResponse> call, Response<ProductsResponse> response) {
-                dialog.dismiss();
                 try {
-                    productsList.addAll(response.body().getProductsList());
-                    productsAdapter.notifyDataSetChanged();
+                    List<CarModel> cars = response.body().getProductsList();
+                    if(cars==null||cars.isEmpty() ){
+                       HomeFragment.this.page =1;
+                    }else {
+                        productsList.addAll(cars);
+                        productsAdapter.notifyDataSetChanged();
+                    }
+
                     connectionIv.setVisibility(View.INVISIBLE);
                 }catch (Exception e){
-                    Log.e("Error",response.message());
+                    HomeFragment.this.page =1;
+                    Log.e("Error",call.request().body()+" "+response.message());
                     connectionIv.setVisibility(View.VISIBLE);
+                }finally {
+                    swipeContainer.setRefreshing(false);
+//                    dialog.dismiss();
+
                 }
 
             }
 
             @Override
             public void onFailure(Call<ProductsResponse> call, Throwable t) {
+                HomeFragment.this.page =1;
                 Log.e("Error",t.getMessage());
                 connectionIv.setVisibility(View.VISIBLE);
+                swipeContainer.setRefreshing(false);
                 dialog.dismiss();
+
                 // Logs .. logging
                 Toast.makeText(requireContext(), "Network Problem", Toast.LENGTH_SHORT).show();
             }
@@ -133,6 +147,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void setUpRecyclerView() {
+        productsAdapter = new CarRvAdapter(productsList, requireContext());
         LinearLayoutManager layoutManager = new LinearLayoutManager(requireContext());
         productRv.setLayoutManager(layoutManager);
         productRv.addItemDecoration(new GridSpacingItemDecoration(2, dpToPx(14), true));
@@ -142,9 +157,9 @@ public class HomeFragment extends Fragment {
             @Override
             public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
                 if(productsList.size()>0){
-                    page++;
+                    HomeFragment.this.page++;
                 }else{
-                    page = 1;
+                    HomeFragment.this.page = 1;
                 }
                 getAllProducts(page);
             }

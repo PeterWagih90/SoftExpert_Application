@@ -43,7 +43,7 @@ public class CarModel implements Serializable {
     }
 
     public String getBrand() {
-        return brand;
+        return brand==null?"Unknown Brand":brand;
     }
 
     public void setBrand(String brand) {
@@ -51,7 +51,7 @@ public class CarModel implements Serializable {
     }
 
     public String getConstractionYear() {
-        return constractionYear;
+        return constractionYear==null?"Unknown Year":constractionYear;
     }
 
     public void setConstractionYear(String constractionYear) {
